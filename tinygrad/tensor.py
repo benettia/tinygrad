@@ -3033,6 +3033,25 @@ class Tensor:
     smoothing = label_smoothing * (log_probs.mean(-1) * loss_mask).sum()
     return -((1 - label_smoothing) * (log_probs * y).sum() + smoothing) / loss_mask.sum()
 
+  def cross_entropy(self, y:Tensor, reduction:str='mean', label_smoothing:float=0.0) -> Tensor:
+    """
+    Compute the cross entropy loss between input logits and target.
+
+    See: https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html
+
+    ```python exec="true" source="above" session="tensor" result="python"
+    t = Tensor([[-1, 2, -3], [1, -2, 3]])
+    Y = Tensor([1, 2])
+    print(t.cross_entropy(Y).item())
+    ```
+    """
+    assert 0.0 <= label_smoothing <= 1.0, "label_smoothing must be in [0.0, 1.0]"
+    assert reduction in ("mean", "sum", "none"), "reduction must be one of ['mean', 'sum', 'none']"
+    y = (1 - label_smoothing)*y + label_smoothing / cast(int, y.shape[1])
+    ret = -self.log_softmax(axis=1).mul(y).sum(axis=1)
+    do_reduction: Dict[str, Callable[[Tensor], Tensor]] = {"mean": Tensor.mean, "sum": Tensor.sum, "none": lambda x: x}
+    return do_reduction[reduction](ret)
+
   # ***** Tensor Properties *****
 
   @property

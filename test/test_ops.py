@@ -2011,6 +2011,15 @@ class TestOps(unittest.TestCase):
     helper_test_op([(32,10), (32,10)], lambda x,y: torch.nn.functional.binary_cross_entropy(x.sigmoid(),torch.clip(y,0,1)),
                                        lambda x,y: x.binary_crossentropy_logits(y.clip(0,1)))
 
+  def test_cross_entropy_reductions(self):
+    for red in ("mean", "sum", "none"):
+      helper_test_op([(32,10), (32,10)], lambda x,y: torch.nn.functional.cross_entropy(x, torch.clip(y,0,1), reduction=red),
+                                         lambda x,y: x.cross_entropy(y.clip(0,1), reduction=red))
+  def test_cross_entropy_smoothing(self):
+    for ls in (0.3, 0.7, 0.9):
+      helper_test_op([(32,10), (32,10)], lambda x,y: torch.nn.functional.cross_entropy(x, torch.clip(y,0,1), reduction='mean', label_smoothing=ls),
+                                         lambda x,y: x.cross_entropy(y.clip(0,1), reduction="mean", label_smoothing=ls))
+
   def test_one_hot(self):
     data = [1, 2, 4]
     helper_test_op([], lambda: torch.nn.functional.one_hot(torch.tensor(data), 6).type(torch.int32),
