@@ -988,7 +988,13 @@ class TestOps(unittest.TestCase):
   def test_std_keepdim(self):
     helper_test_op([(15, 25, 35)], lambda x: x.std(keepdim=True))
     helper_test_op([(15, 25, 35)], lambda x: x.std(0, keepdim=True, correction=0))
-
+  def test_std_mean(self):
+    for i in range(2):
+      helper_test_op([(15,25,35)], lambda x: torch.std_mean(x)[i], lambda x: x.std_mean()[i])
+      helper_test_op([(15,25,35)], lambda x: torch.std_mean(x, correction=5)[i], lambda x: x.std_mean(correction=5)[i])
+      helper_test_op([(15,25,35)], lambda x: torch.std_mean(x, keepdim=True, correction=0)[i], lambda x: x.std_mean(keepdim=True, correction=0)[i])
+      helper_test_op([(3,4,5,6)], lambda x: torch.std_mean(x, axis=(1,2))[i], lambda x: x.std_mean(axis=(1,2))[i])
+      helper_test_op([(1,0,3,0,5)], lambda x: torch.std_mean(x, axis=(1,3))[i], lambda x: x.std_mean(axis=(1,3))[i])
   def test_softmax(self):
     # exceed per kernel buffer limit with backward
     forward_only = (Device.DEFAULT == "WEBGPU")
