@@ -1517,6 +1517,31 @@ class Tensor:
     """
     return self.var(axis, keepdim, correction).sqrt()
 
+  def std_mean(self, axis:Optional[Union[int, Sequence[int]]]=None, keepdim=False, correction=1):
+    """
+    Calculates the standard deviation and mean over the dimensions specified by dim.
+    Syntactic sugar around `Tensor.std` and `Tensor.mean` to match `torch.std_mean`.
+
+    ```python exec="true" source="above" session="tensor" result="python"
+    Tensor.manual_seed(42)
+    t = Tensor.normal(2, 3, mean=2.5, std=0.5)
+    print(t.numpy())
+    ```
+    ```python exec="true" source="above" session="tensor" result="python"
+    std, mean = t.std_mean()
+    print(std.numpy(), mean.numpy())
+    ```
+    ```python exec="true" source="above" session="tensor" result="python"
+    std, mean = t.std_mean(axis=0)
+    print(std.numpy(), mean.numpy())
+    ```
+    ```python exec="true" source="above" session="tensor" result="python"
+    std, mean = t.std_mean(axis=1)
+    print(std.numpy(), mean.numpy())
+    ```
+    """
+    return self.std(axis, keepdim, correction), self.mean(axis, keepdim)
+
   def _softmax(self, axis):
     m = self - self.max(axis=axis, keepdim=True)
     e = m.exp()
