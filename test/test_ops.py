@@ -989,12 +989,16 @@ class TestOps(unittest.TestCase):
     helper_test_op([(15, 25, 35)], lambda x: x.std(keepdim=True))
     helper_test_op([(15, 25, 35)], lambda x: x.std(0, keepdim=True, correction=0))
   def test_std_mean(self):
-    for i in range(2):
-      helper_test_op([(15,25,35)], lambda x: torch.std_mean(x)[i], lambda x: x.std_mean()[i])
-      helper_test_op([(15,25,35)], lambda x: torch.std_mean(x, correction=5)[i], lambda x: x.std_mean(correction=5)[i])
-      helper_test_op([(15,25,35)], lambda x: torch.std_mean(x, keepdim=True, correction=0)[i], lambda x: x.std_mean(keepdim=True, correction=0)[i])
-      helper_test_op([(3,4,5,6)], lambda x: torch.std_mean(x, axis=(1,2))[i], lambda x: x.std_mean(axis=(1,2))[i])
-      helper_test_op([(1,0,3,0,5)], lambda x: torch.std_mean(x, axis=(1,3))[i], lambda x: x.std_mean(axis=(1,3))[i])
+    helper_test_op([(15,25,35)], lambda x: torch.stack(torch.std_mean(x)),
+                                 lambda x: Tensor.stack(*x.std_mean()))
+    helper_test_op([(15,25,35)], lambda x: torch.stack(torch.std_mean(x, correction=5)),
+                                 lambda x: Tensor.stack(*x.std_mean(correction=5)))
+    helper_test_op([(15,25,35)], lambda x: torch.stack(torch.std_mean(x, keepdim=True, correction=0)),
+                                 lambda x: Tensor.stack(*x.std_mean(keepdim=True, correction=0)))
+    helper_test_op([(1,0,3,0,5)], lambda x: torch.stack(torch.std_mean(x, axis=(1,3))),
+                                  lambda x: Tensor.stack(*x.std_mean(axis=(1,3))))
+    helper_test_op([(3,4,5,6)], lambda x: torch.stack(torch.std_mean(x, axis=(1,2))),
+                                lambda x: Tensor.stack(*x.std_mean(axis=(1,2))))
   def test_softmax(self):
     # exceed per kernel buffer limit with backward
     forward_only = (Device.DEFAULT == "WEBGPU")
@@ -2012,13 +2016,13 @@ class TestOps(unittest.TestCase):
                                        lambda x,y: x.binary_crossentropy_logits(y.clip(0,1)))
 
   def test_cross_entropy_reductions(self):
-    for red in ("mean", "sum", "none"):
-      helper_test_op([(32,10), (32,10)], lambda x,y: torch.nn.functional.cross_entropy(x, torch.clip(y,0,1), reduction=red),
-                                         lambda x,y: x.cross_entropy(y.clip(0,1), reduction=red))
+    for r in ("mean", "sum", "none"):
+      helper_test_op([(32,10), (32,10)], lambda x,y: torch.nn.functional.cross_entropy(x, torch.clip(y,0,1), reduction=r),
+                                         lambda x,y: x.cross_entropy(y.clip(0,1), reduction=r))
   def test_cross_entropy_smoothing(self):
-    for ls in (0.3, 0.7, 0.9):
-      helper_test_op([(32,10), (32,10)], lambda x,y: torch.nn.functional.cross_entropy(x, torch.clip(y,0,1), reduction='mean', label_smoothing=ls),
-                                         lambda x,y: x.cross_entropy(y.clip(0,1), reduction="mean", label_smoothing=ls))
+    for ls in (0., 0.3, 0.7, 1.):
+      helper_test_op([(32,10), (32,10)], lambda x,y: torch.nn.functional.cross_entropy(x, torch.clip(y,0,1), label_smoothing=ls),
+                                         lambda x,y: x.cross_entropy(y.clip(0,1), label_smoothing=ls))
 
   def test_one_hot(self):
     data = [1, 2, 4]
