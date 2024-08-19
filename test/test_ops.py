@@ -2023,7 +2023,7 @@ class TestOps(unittest.TestCase):
   def test_cross_entropy_reductions(self):
     for r in ("mean", "sum", "none"):
       helper_test_op([(32,10), (32,10)], lambda x,y: torch.nn.functional.cross_entropy(x, y, reduction=r),
-                                         lambda x,y: x.cross_entropy(y, axis=1, reduction=r))
+                                         lambda x,y: x.cross_entropy(y, reduction=r))
   def test_cross_entropy_smoothing(self):
     for ls in (0., 0.3, 0.7, 1.):
       helper_test_op([(32,10), (32,10)], lambda x,y: torch.nn.functional.cross_entropy(x, y, label_smoothing=ls),
