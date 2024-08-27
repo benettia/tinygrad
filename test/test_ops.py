@@ -2037,28 +2037,23 @@ class TestOps(unittest.TestCase):
                    lambda x,y,z: Tensor.scaled_dot_product_attention(x,y,z,is_causal=True))
 
   def test_binary_crossentropy(self):
-    helper_test_op([(32,10), (32,10)], lambda x,y: torch.nn.functional.binary_cross_entropy(x.sigmoid(),torch.clip(y,0,1)),
-                                       lambda x,y: x.sigmoid().binary_crossentropy(y.clip(0,1)))
-    helper_test_op([(32,10), (32,10)], lambda x,y: torch.nn.functional.binary_cross_entropy_with_logits(x,torch.clip(y,0,1)),
-                                       lambda x,y: x.binary_crossentropy_logits(y.clip(0,1)))
-    helper_test_op([(32,10), (32,10)], lambda x,y: torch.nn.functional.binary_cross_entropy_with_logits(x,torch.clip(y,0,1)),
-                                       lambda x,y: x.sigmoid().binary_crossentropy(y.clip(0,1)))
-    helper_test_op([(32,10), (32,10)], lambda x,y: torch.nn.functional.binary_cross_entropy(x.sigmoid(),torch.clip(y,0,1)),
-                                       lambda x,y: x.binary_crossentropy_logits(y.clip(0,1)))
+    for r in ("mean", "sum", "none"):
+      helper_test_op([(32,10), (32,10)], lambda x,y: torch.nn.functional.binary_cross_entropy(x.sigmoid(),torch.clip(y,0,1), reduction=r),
+                                         lambda x,y: x.sigmoid().binary_crossentropy(y.clip(0,1), reduction=r))
+      helper_test_op([(32,10), (32,10)], lambda x,y: torch.nn.functional.binary_cross_entropy_with_logits(x,torch.clip(y,0,1), reduction=r),
+                                         lambda x,y: x.binary_crossentropy_logits(y.clip(0,1), reduction=r))
+      helper_test_op([(32,10), (32,10)], lambda x,y: torch.nn.functional.binary_cross_entropy_with_logits(x,torch.clip(y,0,1), reduction=r),
+                                         lambda x,y: x.sigmoid().binary_crossentropy(y.clip(0,1), reduction=r))
+      helper_test_op([(32,10), (32,10)], lambda x,y: torch.nn.functional.binary_cross_entropy(x.sigmoid(),torch.clip(y,0,1), reduction=r),
+                                         lambda x,y: x.binary_crossentropy_logits(y.clip(0,1), reduction=r))
 
   def test_cross_entropy(self):
-    helper_test_op([(32,10), (32,10)], lambda x,y: torch.nn.functional.cross_entropy(x, y),
-                                       lambda x,y: x.cross_entropy(y))
-    helper_test_op([(32,10), (32,10)], lambda x,y: torch.nn.functional.cross_entropy(x, torch.argmax(y, dim=1)),
-                                       lambda x,y: x.cross_entropy(y.argmax(axis=1)), forward_only=True)
-  def test_cross_entropy_reductions(self):
     for r in ("mean", "sum", "none"):
-      helper_test_op([(32,10), (32,10)], lambda x,y: torch.nn.functional.cross_entropy(x, y, reduction=r),
-                                         lambda x,y: x.cross_entropy(y, reduction=r))
-  def test_cross_entropy_smoothing(self):
-    for ls in (0., 0.3, 0.7, 1.):
-      helper_test_op([(32,10), (32,10)], lambda x,y: torch.nn.functional.cross_entropy(x, y, label_smoothing=ls),
-                                         lambda x,y: x.cross_entropy(y, label_smoothing=ls))
+      for ls in (0., 0.3, 0.7, 1.):
+        helper_test_op([(32,10), (32,10)], lambda x,y: torch.nn.functional.cross_entropy(x, y, label_smoothing=ls, reduction=r),
+                                           lambda x,y: x.cross_entropy(y, label_smoothing=ls, reduction=r))
+        helper_test_op([(32,10), (32,10)], lambda x,y: torch.nn.functional.cross_entropy(x, torch.argmax(y, dim=1), label_smoothing=ls, reduction=r),
+                                           lambda x,y: x.cross_entropy(y.argmax(axis=1), label_smoothing=ls, reduction=r), forward_only=True)
 
   def test_one_hot(self):
     data = [1, 2, 4]
