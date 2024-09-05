@@ -185,7 +185,7 @@ class TestFetch(unittest.TestCase):
   def test_fetch_no_overflow(self, mock_stderr):
     gzip_url: str = 'https://ftp.gnu.org/gnu/gzip/gzip-1.13.tar.gz'
     fetch(gzip_url, gunzip=True, allow_caching=False)
-    tqdm_output = mock_stderr.getvalue().split("\r")[-1].rstrip()
+    tqdm_output = mock_stderr.getvalue().split("\r")[-1]
     assert re.search(r'(\d+)(?=%)', tqdm_output).group(1) == "100"
 
 class TestFullyFlatten(unittest.TestCase):
