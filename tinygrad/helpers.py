@@ -281,7 +281,9 @@ def fetch(url:str, name:Optional[Union[pathlib.Path, str]]=None, subdir:Optional
         progress_bar.update(close=True)
         if (file_size:=os.stat(f.name).st_size) < total_length: raise RuntimeError(f"fetch size incomplete, {file_size} < {total_length}")
         if gunzip:
-          with gzip.open(f.name, "rb") as g: fp.write_bytes(g.read()); os.unlink(f.name)
+          with gzip.open(f.name, "rb") as g:
+            fp.write_bytes(g.read())
+            os.unlink(f.name)
         else: pathlib.Path(f.name).rename(fp)
   return fp
 
