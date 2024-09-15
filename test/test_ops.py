@@ -2109,6 +2109,8 @@ class TestOps(unittest.TestCase):
     for r in ("mean", "sum", "none"):
       helper_test_op([(32,10), (32,10)], lambda x,y: torch.nn.functional.cross_entropy(x, y, reduction=r),
                                          lambda x,y: x.cross_entropy(y, reduction=r))
+  @unittest.skipIf(condition=getenv("TYPED"), reason="Typeguard changes the error type")
+  def test_cross_entropy_errors(self):
     self.helper_test_exception([(32,10), (32,10)], lambda x,y: torch.nn.functional.cross_entropy(x, y, reduction="typo"),
                                                    lambda x,y: x.cross_entropy(y, reduction="typo"), expected=ValueError)
 
